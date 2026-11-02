@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Design Memory</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Figtree:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1efe8;--surface:#fbfaf5;--ink:#1c1b17;--muted:#6b6759;--line:#e0dccd;--accent:#244c3a;--accent-ink:#f4f1e4;
+--c-yellow:#f3d46a;--c-orange:#ec8a5a;--c-mint:#bfe8cf;--c-blue:#b4c7ec;--c-pink:#f2b5dc;--c-forest:#244c3a;--c-maroon:#7a2323;--c-cream:#f6ecc0;--c-lilac:#c7b5ec;
+--r-sm:10px;--h:40px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--r-md:18px;--r-lg:26px;--gap:14px;--shadow:0 1px 2px rgba(40,34,10,.06),0 8px 24px -12px rgba(40,34,10,.18);
+--serif:'Fraunces',Georgia,serif;--display:'Instrument Serif',Georgia,serif;--sans:'Figtree',system-ui,-apple-system,sans-serif;--ease:cubic-bezier(.2,.7,.2,1);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141411;--surface:#1d1c17;--ink:#f0eddf;--muted:#9b9684;--line:#33312a;--accent:#bfe8cf;--accent-ink:#17301f;--shadow:0 8px 24px -12px #000}}
+:root[data-theme="dark"]{--bg:#141411;--surface:#1d1c17;--ink:#f0eddf;--muted:#9b9684;--line:#33312a;--accent:#bfe8cf;--accent-ink:#17301f;--shadow:0 8px 24px -12px #000}
+*{box-sizing:border-box}html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:var(--sw,236px) 1fr;height:100%;transition:grid-template-columns .25s var(--ease)}
+.app.col{--sw:68px}
+aside{padding:18px 12px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px;font:600 19px var(--serif)}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--c-forest);display:grid;place-items:center;color:var(--c-yellow);font:italic 17px var(--display);flex:none}
+.nav{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:12px;color:var(--muted);text-align:left;width:100%;white-space:nowrap}
+.nav:hover{background:var(--line)}.nav.on{background:var(--ink);color:var(--bg)}
+.nav .g{width:20px;text-align:center;flex:none}.nav .n{margin-left:auto;font-size:12px;opacity:.7}
+.sec{font-size:12px;color:var(--muted);padding:16px 10px 4px}
+.col .nav{justify-content:center;padding:10px 0}.col .brand{justify-content:center;padding:4px 0 16px}.col .lbl,.col .n,.col .sec,.col .brand span:last-child{display:none}
+main{overflow:auto;padding:18px clamp(14px,3vw,36px) 60px}
+header.top{display:flex;gap:10px;align-items:center;position:sticky;top:-18px;z-index:5;padding:6px 0 14px;background:linear-gradient(var(--bg) 80%,transparent);margin-top:-6px}
+.search{flex:1;max-width:560px;display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--muted);text-align:left}
+.search kbd{margin-left:auto;font:12px var(--sans);padding:1px 7px;border:1px solid var(--line);border-radius:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:var(--h);padding:0 var(--s5);border-radius:99px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#a62b2b;color:#fff}
+.ib{width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center}
+h1{font:400 clamp(34px,5vw,56px)/1 var(--display);margin:14px 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 18px;max-width:60ch}
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;gap:var(--gap);margin-bottom:26px}
+.tile{border-radius:var(--r-lg);padding:18px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative;color:#1c1b17;transition:transform .2s var(--ease)}
+.tile:hover{filter:brightness(.97)}
+.tile h3{margin:0;font:400 22px/1.1 var(--serif)}.tile small{opacity:.7}
+.tile.big{grid-column:span 2;grid-row:span 2}.tile.big h3{font:400 clamp(30px,4vw,48px)/1 var(--display)}
+.tile.w{grid-column:span 2}.tile.dk{color:#fbf3df}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.chip{display:inline-flex;align-items:center;height:34px;padding:0 var(--s4);border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sp{flex:1}
+select{padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface)}
+.seg{display:flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--surface)}
+.seg button{padding:7px 12px;font-size:13px}.seg .on{background:var(--ink);color:var(--bg)}
+.mas{column-width:var(--cw,250px);column-gap:var(--gap)}
+.card{break-inside:avoid;margin-bottom:var(--gap);border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);overflow:hidden;position:relative;display:block;width:100%;text-align:left;transition:box-shadow .2s var(--ease),transform .2s var(--ease)}
+.card:hover{border-color:var(--muted)}
+.card .meta{padding:11px 14px 14px}.card h4{margin:0;font:600 15px/1.25 var(--sans);overflow-wrap:anywhere}
+.card .dom{color:var(--muted);font-size:13px;overflow-wrap:anywhere}.tile h3{overflow-wrap:anywhere}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.tag{font-size:12px;padding:2px 9px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.pend{position:absolute;top:10px;left:10px;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--surface);border:1px dashed var(--muted)}
+.fav{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:var(--surface);display:grid;place-items:center;opacity:0;transition:opacity .15s;font-size:16px}
+.card:hover .fav,.fav.on,.fav:focus-visible{opacity:1}.fav.on{color:#d1355b}
+.pv{display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative;overflow:hidden;color:#1c1b17}
+.pv .win{position:absolute;top:12px;left:12px;display:flex;gap:4px}.pv .win i{width:8px;height:8px;border-radius:50%;background:rgba(0,0,0,.25)}
+.pv .big{font:400 clamp(28px,3vw,40px)/1 var(--display)}
+.spec{font-size:84px;line-height:1;margin:auto}.mini{display:flex;flex-direction:column;gap:10px;margin:auto 0;align-items:flex-start}
+.mini .t{width:46px;height:26px;border-radius:99px;background:#1c1b17;position:relative}.mini .t:after{content:"";position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.mini .b{padding:8px 16px;border-radius:10px;background:#1c1b17;color:#fff;font-size:13px}.mini .in{width:100%;height:32px;border-radius:10px;border:1.5px solid #1c1b17}
+.sw{display:flex;gap:6px;margin-top:auto}.sw i{flex:1;height:46px;border-radius:10px}
+.tb{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:rgba(0,0,0,.08);align-self:flex-start;margin-bottom:6px}
+.empty,.err{text-align:center;padding:60px 20px;color:var(--muted)}.empty h2{font:400 32px var(--display);color:var(--ink);margin:0 0 6px}
+.sk{border-radius:var(--r-md);background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:sh 1.4s infinite;margin-bottom:var(--gap);break-inside:avoid}
+@keyframes sh{to{background-position:-200% 0}}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
+.cc{border-radius:var(--r-lg);padding:20px;min-height:200px;display:flex;flex-direction:column;justify-content:flex-end;text-align:left}.cc h3{font:400 28px/1 var(--display);margin:0}
+.scrim{position:fixed;inset:0;background:rgba(20,18,10,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:20;display:flex;justify-content:center;align-items:center;padding:var(--s4);animation:fade .2s}
+.scrim.mid{justify-content:center;align-items:flex-start;padding:10vh 14px}
+.drawer{width:min(720px,100%);max-height:88vh;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:0 var(--s5) var(--s5);overflow:auto;overscroll-behavior:contain;animation:pop .22s var(--ease)}
+@keyframes in{from{opacity:0}}@keyframes fade{from{opacity:0}}@keyframes pop{from{opacity:0;transform:scale(.97)}}
+.modal{width:min(620px,100%);max-height:80vh;overflow:auto;background:var(--surface);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow)}
+.modal.sm{width:min(440px,100%);padding:24px}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 5px}
+input.f,textarea.f,select.f{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+textarea.f{min-height:76px;resize:vertical}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.res{display:flex;gap:12px;align-items:center;padding:8px;border-radius:12px;width:100%;text-align:left}.res:hover,.res:focus-visible{background:var(--bg)}
+.res .th{width:52px;height:40px;border-radius:8px;flex:none}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:99px;z-index:40;animation:in .2s}
+.warn{background:var(--c-yellow);color:#1c1b17;padding:9px 12px;border-radius:12px;font-size:14px;margin-top:10px}
+.hint{font-size:13px;color:var(--muted)}
+.hit{position:absolute;inset:0;z-index:1;border-radius:inherit}.hit:focus-visible{outline-offset:-3px}
+.fav{z-index:2;border:1px solid var(--line)}@media(hover:none){.fav{opacity:1}}
+input.f,select.f{height:var(--h)}
+.dh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:var(--s3);margin:0 calc(var(--s5)*-1);padding:var(--s4) var(--s5) var(--s3);background:var(--surface)}
+.ib.on{color:#d1355b}.dpv{border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--s4)}.dpv .pv{min-height:240px;max-height:380px}
+.dt{font:400 34px/1.05 var(--display);margin:var(--s4) 0 4px;overflow-wrap:anywhere}input.dt{font:400 28px var(--display);height:auto;padding:8px 12px}
+.strip{display:flex;flex-direction:column;aspect-ratio:4/5}.strip span{flex:1;display:flex;align-items:flex-end;justify-content:space-between;padding:6px 12px;font-size:12px;font-weight:600;min-height:0;gap:8px}
+.strip.big{aspect-ratio:auto;flex-direction:row;height:150px;border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--s4)}.strip.big button{flex:1;display:flex;align-items:flex-end;padding:10px;font-size:12px;font-weight:600;text-align:left;min-width:0}
+.crow{display:grid;grid-template-columns:48px 1fr 120px auto;gap:var(--s2) var(--s3);align-items:center;padding:var(--s3) 0;border-top:1px solid var(--line)}
+.csw{position:relative;width:48px;height:48px;border-radius:var(--r-sm);border:1px solid var(--line);overflow:hidden}.csw input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.csw:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.fm{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.fm .tag{cursor:pointer}.fm .tag:hover{border-color:var(--muted)}
+.mv{display:flex;gap:4px}.mv button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line)}
+input.f[aria-invalid=true]{border-color:#a62b2b}
+.fan{display:flex;justify-content:center;margin-bottom:auto;padding-top:6px}.fan i{width:52px;height:68px;border-radius:10px;border:2px solid var(--surface);margin:0 -8px}
+@media(max-width:700px){.scrim:not(.mid){padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))}.drawer{max-height:100%;height:100%;border-radius:var(--r-md)}.crow{grid-template-columns:48px 1fr}.crow>.hx,.crow>.mv{grid-column:1/-1}}
+@media(max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.tile.w{grid-column:span 2}}
+@media(max-width:700px){.app{--sw:64px}.lbl,.n,.sec,.brand span:last-child{display:none}.bento{grid-auto-rows:120px}.search kbd{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside id="side" aria-label="Primary"></aside>
+  <main id="main"></main>
+</div>
+<div id="layer"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const C={y:'#f3d46a',o:'#ec8a5a',m:'#bfe8cf',b:'#b4c7ec',p:'#f2b5dc',f:'#244c3a',r:'#7a2323',c:'#f6ecc0',l:'#c7b5ec'};
+const TYPES={color_palette:'Colour palettes',website:'Websites',image:'Images',type:'Typography',ui:'UI components',animation:'Animation',tool:'Tools'};
+const GL={color_palette:'❖',library:'◧',collections:'❏',favorites:'♥',website:'▭',image:'▣',type:'Aa',ui:'◫',animation:'◌',tool:'✦'};
+/*MATH*/
+const normHex=s=>{let h=String(s??'').trim().replace(/^#/,'');if(/^[0-9a-f]{3}$/i.test(h))h=[...h].map(c=>c+c).join('');return /^[0-9a-f]{6}$/i.test(h)?'#'+h.toUpperCase():null};
+const toRgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16&255,n>>8&255,n&255]};
+const toHex=(r,g,b)=>'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();
+// Naive sRGB->CMYK. Approximate; not a substitute for ICC-profile print conversion.
+const toCmyk=([r,g,b])=>{const R=r/255,G=g/255,B=b/255,k=1-Math.max(R,G,B);if(k>=1)return[0,0,0,100];const f=x=>Math.round((1-x-k)/(1-k)*100);return[f(R),f(G),f(B),Math.round(k*100)]};
+const toHsl=([r,g,b])=>{const R=r/255,G=g/255,B=b/255,mx=Math.max(R,G,B),mn=Math.min(R,G,B),d=mx-mn,l=(mx+mn)/2;let h=0,s=0;if(d){s=d/(1-Math.abs(2*l-1));h=mx===R?((G-B)/d)%6:mx===G?(B-R)/d+2:(R-G)/d+4;h*=60;if(h<0)h+=360}return[Math.round(h)%360,Math.round(s*100),Math.round(l*100)]};
+const fmt=hex=>{const h=normHex(hex),c=toRgb(h),k=toCmyk(c),l=toHsl(c);return{hex:h,rgb:c,css:`rgb(${c.join(', ')})`,cmyk:`cmyk(${k[0]}%, ${k[1]}%, ${k[2]}%, ${k[3]}%)`,hsl:`hsl(${l[0]}, ${l[1]}%, ${l[2]}%)`}};
+const slug=(n,i)=>String(n).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'color-'+(i+1);
+const cssVars=cols=>{const u={};return':root { '+cols.map((k,i)=>{let s=slug(k.n,i);if(u[s])s+='-'+(i+1);u[s]=1;return`--palette-${s}: ${normHex(k.hex)};`}).join(' ')+' }'};
+const lum=hex=>{const f=v=>(v/=255)<=.03928?v/12.92:((v+.055)/1.055)**2.4;const[r,g,b]=toRgb(hex);return .2126*f(r)+.7152*f(g)+.0722*f(b)};
+const ink=hex=>lum(hex)>.4?'#1c1b17':'#fbf8ee';
+const allText=p=>p.t+'\n'+p.colors.map(k=>{const f=fmt(k.hex);return`${k.n}: ${f.hex} | ${f.css} | ${f.cmyk} | ${f.hsl}`}).join('\n');
+// Dominant colours: 4-bit histogram, skip transparent pixels, greedy pick by weight with a falling distance threshold (removes near-duplicates). Deterministic.
+function extract(px,n=5){const B=new Map();for(let i=0;i<px.length;i+=4){if(px[i+3]<128)continue;const key=(px[i]>>4)<<8|(px[i+1]>>4)<<4|px[i+2]>>4;const b=B.get(key)||[0,0,0,0];b[0]+=px[i];b[1]+=px[i+1];b[2]+=px[i+2];b[3]++;B.set(key,b)}
+ const L=[...B.entries()].map(([k,b])=>({c:[b[0]/b[3],b[1]/b[3],b[2]/b[3]],w:b[3],k})).sort((a,b)=>b.w-a.w||a.k-b.k);
+ for(let t=56;t>=0;t-=8){const out=[];for(const x of L){if(out.every(y=>Math.hypot(x.c[0]-y.c[0],x.c[1]-y.c[1],x.c[2]-y.c[2])>=t))out.push(x);if(out.length===n)break}if(out.length===n||t===0)return out.map(x=>toHex(...x.c))}}
+/*ENDMATH*/
+const OKT=['image/png','image/jpeg','image/webp','image/gif'];
+async function fromFile(f,n){if(!OKT.includes(f.type))throw Error('Unsupported file. Use PNG, JPEG, WebP or GIF.');const b=await createImageBitmap(f).catch(()=>{throw Error('That image could not be read.')});const s=Math.min(1,128/Math.max(b.width,b.height)),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(b.width*s));cv.height=Math.max(1,Math.round(b.height*s));const x=cv.getContext('2d');x.drawImage(b,0,0,cv.width,cv.height);const r=extract(x.getImageData(0,0,cv.width,cv.height).data,n);if(!r.length)throw Error('No visible colours found in that image.');return r}
+async function copy(v,l){const ae=document.activeElement;try{await navigator.clipboard.writeText(v)}catch{try{const t=document.createElement('textarea');t.value=v;t.style.cssText='position:fixed;opacity:0';document.body.append(t);t.select();const ok=document.execCommand('copy');t.remove();ae?.focus();if(!ok)throw 0}catch{toast('Copy failed. Select the value and copy it manually');return}}toast('Copied '+l)}
+// ─── API Client & Data Adapters ─────────────────────────────────────────────
+const API_BASE = '/api/v1';
+
+async function apiRequest(endpoint, options = {}) {
+  const url = `${API_BASE}${endpoint}`;
+  const config = {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  };
+  if (config.body && typeof config.body !== 'string') {
+    config.body = JSON.stringify(config.body);
+  }
+  let res;
+  try {
+    res = await fetch(url, config);
+  } catch (err) {
+    throw new Error('Could not connect to Design Memory server.');
+  }
+  if (!res.ok) {
+    let msg = `Server error (${res.status})`;
+    try {
+      const errData = await res.json();
+      if (errData && errData.detail) {
+        msg = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail);
+      }
+    } catch (_) {}
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  return await res.json();
+}
+
+const api = {
+  getItems: (params = '') => apiRequest('/items' + (params ? '?' + params : '')),
+  getItem: id => apiRequest(`/items/${id}`),
+  createItem: data => apiRequest('/items', { method: 'POST', body: data }),
+  updateItem: (id, data) => apiRequest(`/items/${id}`, { method: 'PATCH', body: data }),
+  deleteItem: id => apiRequest(`/items/${id}`, { method: 'DELETE' }),
+  toggleFavorite: id => apiRequest(`/items/${id}/favorite`, { method: 'POST' }),
+  archiveItem: id => apiRequest(`/items/${id}/archive`, { method: 'POST' }),
+  checkDuplicateDomain: domain => apiRequest(`/items/check/duplicate-domain?domain=${encodeURIComponent(domain)}`),
+  checkDuplicate: target => apiRequest(`/items/check/duplicate?target=${encodeURIComponent(target)}`),
+  extractMetadata: url => apiRequest(`/metadata/extract?url=${encodeURIComponent(url)}`),
+
+  getCollections: () => apiRequest('/collections'),
+  createCollection: data => apiRequest('/collections', { method: 'POST', body: data }),
+  updateCollection: (id, data) => apiRequest(`/collections/${id}`, { method: 'PATCH', body: data }),
+  deleteCollection: id => apiRequest(`/collections/${id}`, { method: 'DELETE' }),
+
+  getTags: () => apiRequest('/tags'),
+};
+
+function fromApiItem(it) {
+  const now = Date.now();
+  const created = new Date(it.created_at).getTime();
+  const age = Math.max(0, Math.floor((now - created) / (1000 * 60 * 60 * 24)));
+  return {
+    id: it.id,
+    t: it.title,
+    d: it.domain || (it.url ? (new URL(it.url)).hostname.replace(/^www\./, '') : 'Resource'),
+    url: it.url,
+    ty: it.resource_type,
+    tags: it.tags || [],
+    col: it.collection_ids || [],
+    r: it.aspect_ratio || '4/3',
+    c: it.color || '#B4C7EC',
+    c2: it.color2 || null,
+    font: it.font_family || null,
+    fav: it.is_favorite ? 1 : 0,
+    arch: it.is_archived ? 1 : 0,
+    pend: it.is_pending ? 1 : 0,
+    age: age,
+    note: it.notes || '',
+    why: it.reason_for_saving || '',
+    colors: (it.colors || []).map(k => ({
+      id: k.id,
+      n: k.name,
+      hex: k.hex_value,
+      src: k.source || 'manual'
+    }))
+  };
+}
+
+function fromApiCollection(c) {
+  return {
+    id: c.id,
+    n: c.name,
+    c: c.color
+  };
+}
+
+let D = [];
+let COL = [];
+const S = {
+  view: 'library',
+  type: '',
+  sort: 'new',
+  dens: '250px',
+  collapsed: false,
+  loading: true,
+  loadError: null,
+  open: null,
+  sel: new Set(),
+  nid: 100,
+  saving: false
+};
+const dk=c=>[C.f,C.r].includes(c);
+function pv(it,big){
+ if(it.ty==='color_palette')return `<div class="strip" style="${big?'aspect-ratio:auto':''}">${it.colors.map(k=>`<span style="background:${k.hex};color:${ink(k.hex)}"><i style="font-style:normal">${esc(k.n)}</i>${k.hex}</span>`).join('')}</div>`;
+ const c=it.c,c2=it.c2||C.y,f=it.font||'Fraunces';let h='';
+ if(it.ty==='type')h=`<div class="spec" style="font-family:'${f}',serif">Aa</div><span class="hint" style="color:inherit">${esc(it.t)}</span>`;
+ else if(it.ty==='ui')h='<div class="mini"><div class="t"></div><div class="b">Continue</div><div class="in"></div></div>';
+ else if(it.ty==='website')h=`<div class="win"><i></i><i></i><i></i></div><div class="big">${esc(it.t.split(':')[0])}</div>`;
+ else if(it.ty==='tool')h=`<div class="sw"><i style="background:${c2}"></i><i style="background:${C.f}"></i><i style="background:${C.b}"></i><i style="background:${C.o}"></i></div>`;
+ const bg=it.ty==='image'?`radial-gradient(circle at 30% 70%,${c2},transparent 55%),radial-gradient(circle at 75% 25%,${C.c},transparent 45%),${c}`:it.ty==='animation'?`repeating-radial-gradient(circle at 50% 120%,${c} 0 18px,${c2||C.y} 18px 36px)`:c;
+ return `<div class="pv" style="background:${bg};aspect-ratio:${big?'auto':it.r};${dk(c)?'color:#fbf3df':''}">${h}</div>`}
+function list(){
+ let r=D.filter(i=>!i.arch);const v=S.view;
+ if(v==='favorites')r=r.filter(i=>i.fav);else if(TYPES[v])r=r.filter(i=>i.ty===v);else if(String(v).startsWith('c')&&v!=='collections'&&v!=='library')r=r.filter(i=>i.col.includes(+v.slice(1)));
+ if(S.type)r=r.filter(i=>i.ty===S.type);
+ const s=S.sort;return [...r].sort((a,b)=>s==='old'?b.age-a.age:s==='az'?a.t.localeCompare(b.t):a.age-b.age)}
+function card(it){return `<article class="card"><button class="hit" data-a="open" data-id="${it.id}" aria-label="Open ${esc(it.t)}"></button>${pv(it)}${it.pend?'<span class="pend">Pending analysis</span>':''}<button class="fav ${it.fav?'on':''}" data-a="fav" data-id="${it.id}" aria-pressed="${!!it.fav}" aria-label="${it.fav?'Remove from favourites':'Add to favourites'}">${it.fav?'♥':'♡'}</button><div class="meta"><h4>${esc(it.t)}</h4><div class="dom">${esc(it.d)}</div>${it.tags.length?`<div class="tags">${it.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}</div></article>`}
+function side(){
+ const n=(k,l)=>`<button class="nav ${S.view===k?'on':''}" data-a="view" data-v="${k}" aria-label="${l}"><span class="g">${GL[k]}</span><span class="lbl">${l}</span>${k==='library'?`<span class="n">${D.length}</span>`:''}</button>`;
+ $('#side').innerHTML=`<div class="brand"><span class="logo">dm</span><span>Design Memory</span></div>${n('library','Library')}${n('collections','Collections')}${n('favorites','Favorites')}<div class="sec">Resource types</div>${Object.entries(TYPES).map(([k,l])=>n(k,l)).join('')}<div class="sp"></div><button class="nav" data-a="collapse" aria-label="Collapse sidebar"><span class="g">${S.collapsed?'»':'«'}</span><span class="lbl">Collapse</span></button><button class="nav" data-a="theme" aria-label="Toggle theme"><span class="g">◐</span><span class="lbl">Theme</span></button>`;
+ $('#app').classList.toggle('col',S.collapsed)}
+function main(){
+ const v=S.view;let h=`<header class="top"><button class="search" data-a="search" aria-label="Search"><span>⌕</span><span>Search titles, notes, tags…</span><kbd>Ctrl K</kbd></button><span class="sp"></span>${v==='color_palette'?'<button class="btn ghost" data-a="newpal">New palette</button>':''}<button class="btn" data-a="add">Add resource</button></header>`;
+ if(S.loadError){
+  h+=`<div class="empty"><h2>Backend Unavailable</h2><p>${esc(S.loadError)}</p><button class="btn" data-a="reload">Retry</button></div>`;
+  $('#main').innerHTML=h;return;
+ }
+ if(v==='collections'){h+=`<h1>Collections</h1><p class="sub">Moodboards, not folders. A reference can live in several.</p><div class="cols">${COL.map(c=>`<button class="cc" data-a="view" data-v="c${c.id}" style="background:${c.c};${dk(c.c)?'color:#fbf3df':''}"><div class="fan" aria-hidden="true">${D.filter(i=>i.col.includes(c.id)).slice(0,3).map((i,k)=>`<i style="background:${i.ty==='color_palette'?i.colors[0].hex:i.c};transform:rotate(${(k-1)*9}deg) translateY(${k===1?0:5}px)"></i>`).join('')}</div><h3>${esc(c.n)}</h3><small>${D.filter(i=>i.col.includes(c.id)).length} references</small></button>`).join('')}<button class="cc" data-a="newcol" style="border:2px dashed var(--line)"><h3>New collection</h3><small>Name it, then add references from any card</small></button></div>`;$('#main').innerHTML=h;return}
+ const cc=String(v).startsWith('c')&&v!=='collections'&&v!=='library'?COL.find(c=>c.id==+v.slice(1)):null;
+ const title=cc?cc.n:v==='library'?'Your library':v==='favorites'?'Favorites':TYPES[v];
+ const L=list();
+ h+=`<h1>${esc(title)}</h1><p class="sub">${v==='library'?'Everything you have saved, in one place.':L.length+' references'}</p>`;
+ if(v==='library'&&!S.type&&!S.loading&&D.some(i=>i.fav)){const F=D.filter(i=>i.fav).slice(0,4);const cls=['big','','w',''];
+  h+=`<section class="bento" aria-label="Pinned">${F.map((it,k)=>`<button class="tile ${cls[k]||''} ${dk(it.c)?'dk':''}" data-a="open" data-id="${it.id}" style="background:${it.ty==='image'?`radial-gradient(circle at 30% 70%,${it.c2||C.y},transparent 55%),${it.c}`:it.c}"><small>${TYPES[it.ty]}</small><h3>${esc(it.t)}</h3></button>`).join('')}</section>`}
+ h+=`<div class="bar" role="toolbar"><button class="chip ${S.type?'':'on'}" data-a="type" data-v="">All</button>${Object.entries(TYPES).map(([k,l])=>`<button class="chip ${S.type===k?'on':''}" data-a="type" data-v="${k}">${l}</button>`).join('')}<span class="sp"></span><label class="hint" style="margin:0" for="so">Sort</label><select id="so" data-a="sort"><option value="new" ${S.sort=='new'?'selected':''}>Newest</option><option value="old" ${S.sort=='old'?'selected':''}>Oldest</option><option value="az" ${S.sort=='az'?'selected':''}>Title</option></select><div class="seg" role="group" aria-label="Density">${[['320px','Roomy'],['250px','Cozy'],['190px','Compact']].map(([w,l])=>`<button class="${S.dens===w?'on':''}" data-a="dens" data-v="${w}">${l}</button>`).join('')}</div></div>`;
+ if(S.loading)h+=`<div class="mas">${[200,260,170,300,220,240,190,280].map(x=>`<div class="sk" style="height:${x}px"></div>`).join('')}</div>`;
+ else if(!L.length)h+=`<div class="empty"><h2>${D.length?'Nothing here yet':'Your library is empty'}</h2><p>${v==='favorites'?'Tap the heart on any card to pin it here.':v==='color_palette'?'Build one by hand or pull colours from an image.':'Add your first reference, or clear the filter.'}</p><button class="btn" data-a="${v==='color_palette'?'newpal':'add'}">${v==='color_palette'?'Create a palette':'Add a reference'}</button></div>`;
+ else h+=`<div class="mas" style="--cw:${S.dens}">${L.map(card).join('')}</div>`;
+ $('#main').innerHTML=h}
+function render(){side();main()}
+function toast(m){const e=document.createElement('div');e.className='toast';e.setAttribute('role','status');e.textContent=m;document.body.append(e);setTimeout(()=>e.remove(),2200)}
+const layer=h=>{const L=$('#layer');if(h&&!L.innerHTML){S.opener=document.activeElement;$('#main').style.overflow='hidden'}L.innerHTML=h;if(h){const d=L.querySelector('[role=dialog],[role=alertdialog]');(d?.querySelector('[data-init],input,textarea,button')||d)?.focus()}};
+const close=()=>{
+ const cur=document.activeElement;
+ if(cur&&(cur.dataset?.in==='note'||cur.dataset?.in==='why')&&S.open){
+  const it=D.find(i=>i.id==S.open);
+  if(it){
+   const payload=cur.dataset.in==='note'?{notes:cur.value}:{reason_for_saving:cur.value};
+   api.updateItem(it.id,payload).catch(()=>{});
+  }
+ }
+ $('#layer').innerHTML='';$('#main').style.overflow='';const o=S.opener,id=S.open;S.open=null;S.opener=null;requestAnimationFrame(()=>{const t=id&&document.querySelector(`#main [data-a="open"][data-id="${id}"]`);(t||(o&&o.isConnected?o:null))?.focus()})};
+const fsel=el=>el.id?'#'+el.id:el.dataset.a?`[data-a="${el.dataset.a}"]`+(el.dataset.c?`[data-c="${el.dataset.c}"]`:'')+(el.dataset.i?`[data-i="${el.dataset.i}"]`:''):el.dataset.in?`[data-in="${el.dataset.in}"]`+(el.dataset.i?`[data-i="${el.dataset.i}"]`:''):null;
+const pd=it=>{render();drawer(it.id)};
+function palUI(it){const fm=k=>{const f=fmt(k.hex);return[['HEX',f.hex],['RGB',f.css],['CMYK',f.cmyk],['HSL',f.hsl],['CSS var','--palette-'+slug(k.n,0)+': '+f.hex+';']]};
+ return `<div class="row" style="margin:var(--s4) 0 var(--s2)"><button class="btn" data-a="cssall">Copy CSS variables</button><button class="btn ghost" data-a="copyall">Copy all values</button><button class="btn ghost" data-a="addc">Add colour</button><span class="sp"></span><select id="ecount" class="f" style="width:auto" aria-label="Colours to extract">${[3,4,5,6,7,8].map(n=>`<option ${n==5?'selected':''}>${n}</option>`).join('')}</select><button class="btn ghost" data-a="pick">Extract from image</button><input type="file" id="imgin" data-in="img" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div><p class="hint" style="margin:0 0 var(--s2)">Extracted colours are added after yours; existing colours are never replaced. CMYK is a simple approximation, not an ICC print conversion.</p>`+it.colors.map((k,i)=>`<div class="crow" id="c${i}"><label class="csw" style="background:${k.hex}"><input type="color" value="${k.hex.toLowerCase()}" data-in="cpick" data-i="${i}" aria-label="Pick colour for ${esc(k.n)}"></label><input class="f" data-in="cname" data-i="${i}" value="${esc(k.n)}" aria-label="Colour name"><input class="f hx" data-in="chex" data-i="${i}" value="${k.hex}" maxlength="7" aria-label="HEX value for ${esc(k.n)}"><div class="mv"><button data-a="cup" data-i="${i}" aria-label="Move up">↑</button><button data-a="cdn" data-i="${i}" aria-label="Move down">↓</button><button data-a="crm" data-i="${i}" aria-label="Remove ${esc(k.n)}">✕</button></div><div class="fm">${fm(k).map(([l,v])=>`<button class="tag" data-a="copy" data-l="${l}" data-v="${esc(v)}" aria-label="Copy ${l} ${esc(v)}">${l} ${esc(l==='CSS var'?'':v)}</button>`).join('')}</div></div>`).join('')}
+function drawer(id){
+ const it=D.find(i=>i.id==id);if(!it)return;S.open=id;const P=it.ty==='color_palette';
+ const old=$('#layer .drawer'),st=old?old.scrollTop:0,fk=old&&old.contains(document.activeElement)?fsel(document.activeElement):null;
+ const origUrl=it.url||(it.d&&it.d!=='Colour palette'?`https://${it.d}`:null);
+ layer(`<div class="scrim" data-a="scrim"><div class="drawer" role="dialog" aria-modal="true" aria-labelledby="dt"><div class="dh"><button class="ib" data-a="close" data-init aria-label="Close">✕</button><span class="sp"></span><button class="ib ${it.fav?'on':''}" data-a="fav" aria-pressed="${!!it.fav}" aria-label="${it.fav?'Remove from favourites':'Add to favourites'}">${it.fav?'♥':'♡'}</button></div>
+ ${P?`<div class="strip big">${it.colors.map((k,i)=>`<button data-a="gotoc" data-i="${i}" style="background:${k.hex};color:${ink(k.hex)}" aria-label="Edit ${esc(k.n)} ${k.hex}">${k.hex}</button>`).join('')}</div>`:`<div class="dpv">${pv(it,1)}</div>`}
+ <span class="chip" style="height:28px;font-size:12px">${TYPES[it.ty]}</span>${P?`<input class="f dt" id="dt" data-in="title" value="${esc(it.t)}" aria-label="Palette name" style="margin-top:var(--s3)">`:`<h2 class="dt" id="dt">${esc(it.t)}</h2>`}
+ <div class="hint">${esc(it.d)} · saved ${it.age?it.age+' days ago':'today'}</div>${P||!origUrl?'':`<div class="row" style="margin-top:var(--s3)"><a class="btn" href="${esc(origUrl)}" target="_blank" rel="noopener" style="text-decoration:none">Open original</a></div>`}
+ ${P?palUI(it):''}
+ <label>Why I saved this</label><textarea class="f" data-in="why" placeholder="One line for future you">${esc(it.why)}</textarea><label>${P?'Description':'Notes'}</label><textarea class="f" data-in="note" placeholder="Details worth remembering">${esc(it.note)}</textarea>
+ <label>Tags</label><div class="tags" style="margin:0 0 8px">${it.tags.map(t=>`<button class="tag" data-a="rmtag" data-t="${esc(t)}" aria-label="Remove tag ${esc(t)}">${esc(t)} ✕</button>`).join('')}</div><input class="f" id="nt" placeholder="Add a tag and press Enter" data-in="tag">
+ <label>Collections</label><div class="row">${COL.map(c=>`<button class="chip ${it.col.includes(c.id)?'on':''}" data-a="tcol" data-c="${c.id}" aria-pressed="${it.col.includes(c.id)}">${esc(c.n)}</button>`).join('')}</div>
+ <div class="row" style="margin-top:var(--s5)"><button class="btn ghost" data-a="arch">Archive</button><button class="btn danger" data-a="del">Delete…</button></div></div></div>`);
+ const nd=$('#layer .drawer');if(old)nd.scrollTop=st;(fk&&nd.querySelector(fk))?.focus()}
+function newpal(){layer(`<div class="scrim mid" data-a="scrim"><div class="modal sm" role="dialog" aria-modal="true" aria-label="New palette"><h2 style="font:400 30px var(--display);margin:0">New palette</h2><label for="pn">Name</label><input class="f" id="pn" placeholder="e.g. Autumn editorial"><label for="pc">Colours to extract from an image</label><select class="f" id="pc">${[3,4,5,6,7,8].map(n=>`<option ${n==5?'selected':''}>${n}</option>`).join('')}</select><div class="row" style="margin-top:var(--s3)"><button class="btn ghost" data-a="ppick">Choose image (optional)</button><span class="hint" id="pf">Without an image you start with three colours.</span></div><input type="file" id="pimg" data-in="pimg" accept="image/png,image/jpeg,image/webp,image/gif" hidden><div id="pm"></div><div class="row" style="margin-top:var(--s5);justify-content:flex-end"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="mkpal">Create palette</button></div></div></div>`);$('#pn').focus()}
+async function mkpal(){
+ const nm=$('#pn').value.trim();
+ if(!nm){$('#pm').innerHTML='<div class="warn" role="alert">Give the palette a name.</div>';return}
+ let cols;const f=$('#pimg').files[0];
+ try{
+  cols=f?(await fromFile(f,+$('#pc').value)).map((h,i)=>({n:'Colour '+(i+1),hex:h,src:'extracted'})):[['Forest','#263D32'],['Ochre','#D9A86C'],['Paper','#F1EADA']].map(([n,hex])=>({n,hex,src:'manual'}));
+ }catch(e){$('#pm').innerHTML=`<div class="warn" role="alert">${esc(e.message)}</div>`;return}
+ const payload={
+  title:nm,
+  domain:'Colour palette',
+  url:null,
+  resource_type:'color_palette',
+  color:cols[0].hex,
+  aspect_ratio:'5/4',
+  notes:'',
+  reason_for_saving:'',
+  colors:cols.map(c=>({name:c.n||c.name,hex_value:c.hex,source:c.src||'manual'}))
+ };
+ try {
+  const created=await api.createItem(payload);
+  const it=fromApiItem(created);
+  D.unshift(it);
+  S.view='color_palette';
+  S.type='';
+  close();
+  render();
+  drawer(it.id);
+  toast('Palette created');
+ }catch(err){
+  $('#pm').innerHTML=`<div class="warn" role="alert">${esc(err.message)}</div>`;
+ }
+}
+
+function search(q=''){
+ layer(`<div class="scrim mid" data-a="scrim"><div class="modal" role="dialog" aria-modal="true" aria-label="Search"><input class="f" id="q" placeholder="Search titles, domains, notes and tags" value="${esc(q)}" autocomplete="off"><div class="row" style="margin:10px 0">${Object.entries(TYPES).map(([k,l])=>`<button class="chip ${S.st===k?'on':''}" data-a="stype" data-v="${k}">${l}</button>`).join('')}</div><div id="rs"></div></div></div>`);
+ $('#q').focus();rs(q)}
+function rs(q){
+ const t=q.toLowerCase().trim();const box=$('#rs');
+ if(!t&&!S.st){box.innerHTML='<div class="hint" style="padding:6px 8px">Recent</div>'+['palette','serif','portfolio'].map(x=>`<button class="res" data-a="rq" data-q="${x}">⟲ ${x}</button>`).join('')+'<p class="hint" style="padding:8px">Plain text search for now. Semantic search can plug into this same box later.</p>';return}
+ const r=D.filter(i=>(!S.st||i.ty===S.st)&&(!t||[i.t,i.d,i.note,i.why,...i.tags,...(i.colors||[]).flatMap(k=>[k.hex,k.n])].join(' ').toLowerCase().includes(t)));
+ box.innerHTML=r.length?`<div class="hint" style="padding:6px 8px">${r.length} result${r.length>1?'s':''}</div>`+r.map(i=>`<button class="res" data-a="open" data-id="${i.id}"><span class="th" style="background:${i.c}"></span><span><b>${esc(i.t)}</b><br><span class="hint">${esc(i.d)} · ${TYPES[i.ty]}</span></span></button>`).join(''):`<div class="empty" style="padding:30px"><h2>No matches</h2><p>Try a different word, or clear the type filter.</p><button class="btn ghost" data-a="stype" data-v="">Clear filters</button></div>`}
+function add(dup){layer(`<div class="scrim mid" data-a="scrim"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Add resource"><h2 style="font:400 30px var(--display);margin:0">Add a resource</h2><label for="au">URL</label><input class="f" id="au" placeholder="https://example.com" inputmode="url"><div id="am"></div><label for="at">Title (optional)</label><input class="f" id="at"><label for="ak">Type</label><select class="f" id="ak">${Object.entries(TYPES).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select><label for="an">Note</label><textarea class="f" id="an"></textarea><div class="row" style="margin-top:18px;justify-content:flex-end"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="save">Save</button></div></div></div>`);$('#au').focus()}
+function confirmDel(it){layer(`<div class="scrim mid" data-a="scrim"><div class="modal sm" role="alertdialog" aria-label="Confirm delete"><h2 style="font:400 28px var(--display);margin:0 0 8px">Delete this reference?</h2><p class="hint">“${esc(it.t)}” and its notes will be removed permanently.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-a="back">Keep it</button><button class="btn danger" data-a="del2">Delete</button></div></div></div>`)}
+document.addEventListener('click',async e=>{
+ const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a,id=+el.dataset.id,it=D.find(i=>i.id==(id||S.open));
+ if(a==='scrim'){if(e.target===el)close();return}
+ if(a==='reload'){initApp();return}
+ if(a==='fav'){
+  e.stopPropagation();
+  try{
+   await api.toggleFavorite(it.id);
+   it.fav=it.fav?0:1;
+   const o=S.open;render();
+   if(o)drawer(o);
+   else document.querySelector(`.fav[data-id="${id}"]`)?.focus();
+  }catch(err){toast(err.message)}
+  return;
+ }
+ if(a==='open'){drawer(id)}
+ else if(a==='view'){S.view=el.dataset.v;S.type='';render();$('#main').scrollTop=0}
+ else if(a==='collapse'){S.collapsed=!S.collapsed;render()}
+ else if(a==='theme'){const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches;const cur=r.dataset.theme||(d?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark'}
+ else if(a==='search')search();
+ else if(a==='type'){S.type=el.dataset.v;main()}
+ else if(a==='dens'){S.dens=el.dataset.v;main()}
+ else if(a==='add')add();
+ else if(a==='close')close();
+ else if(a==='stype'){S.st=S.st===el.dataset.v?'':el.dataset.v;search($('#q')?.value||'')}
+ else if(a==='rq'){$('#q').value=el.dataset.q;rs(el.dataset.q)}
+ else if(a==='rmtag'){
+  const nextTags=it.tags.filter(t=>t!==el.dataset.t);
+  try{
+   await api.updateItem(it.id,{tags:nextTags});
+   it.tags=nextTags;
+   drawer(it.id);render();$('#nt')?.focus();
+  }catch(err){toast(err.message)}
+ }
+ else if(a==='tcol'){
+  const c=+el.dataset.c;
+  const nextCols=it.col.includes(c)?it.col.filter(x=>x!==c):[...it.col,c];
+  try{
+   await api.updateItem(it.id,{collection_ids:nextCols});
+   it.col=nextCols;
+   drawer(it.id);render();
+  }catch(err){toast(err.message)}
+ }
+ else if(a==='arch'){
+  try{
+   await api.archiveItem(it.id);
+   it.arch=1;close();render();toast('Archived');
+  }catch(err){toast(err.message)}
+ }
+ else if(a==='del')confirmDel(it);
+ else if(a==='del2'){
+  try{
+   await api.deleteItem(S.open);
+   D=D.filter(i=>i.id!==S.open);
+   close();render();toast('Deleted');
+  }catch(err){toast(err.message)}
+ }
+ else if(a==='newcol'){
+  const n=prompt('Collection name');
+  if(n&&n.trim()){
+   const cs=[C.p,C.b,C.m,C.c];
+   try{
+    const created=await api.createCollection({name:n.trim(),color:cs[COL.length%4]});
+    COL.push(fromApiCollection(created));
+    render();toast('Collection created');
+   }catch(err){toast(err.message)}
+  }
+ }
+ else if(a==='copy')copy(el.dataset.v||cssVars([it.colors[+el.dataset.i]]),el.dataset.l);
+ else if(a==='cssall')copy(cssVars(it.colors),'CSS variables');
+ else if(a==='copyall')copy(allText(it),'all colour values');
+ else if(a==='back')drawer(S.open);
+ else if(a==='addc'){
+  it.colors.push({n:'Colour '+(it.colors.length+1),hex:'#8A8A8A',src:'manual'});
+  try{
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);$('#layer #c'+(it.colors.length-1))?.scrollIntoView({block:'nearest'});toast('Colour added');
+  }catch(err){toast(err.message)}
+ }
+ else if(a==='crm'){
+  if(it.colors.length<2){toast('A palette needs at least one colour');return}
+  const removed=it.colors.splice(+el.dataset.i,1);
+  try{
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);
+  }catch(err){
+   it.colors.splice(+el.dataset.i,0,removed[0]);
+   toast(err.message);
+  }
+ }
+ else if(a==='cup'||a==='cdn'){
+  const i=+el.dataset.i,j=i+(a==='cup'?-1:1);
+  if(j<0||j>=it.colors.length)return;
+  [it.colors[i],it.colors[j]]=[it.colors[j],it.colors[i]];
+  try{
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);$(`#layer [data-a="${a}"][data-i="${j}"]`)?.focus();
+  }catch(err){
+   [it.colors[i],it.colors[j]]=[it.colors[j],it.colors[i]];
+   toast(err.message);
+  }
+ }
+ else if(a==='gotoc'){const r=$('#layer #c'+el.dataset.i);r.scrollIntoView({block:'center'});r.querySelector('[data-in=chex]').focus()}
+ else if(a==='pick')$('#imgin').click();
+ else if(a==='ppick')$('#pimg').click();
+ else if(a==='newpal')newpal();
+ else if(a==='mkpal')mkpal();
+ else if(a==='save'){
+  if(S.saving)return;
+  const u=$('#au').value.trim();let ok=true;try{const p=new URL(u);ok=/^https?:$/.test(p.protocol)}catch{ok=false}
+  const m=$('#am');if(!ok){m.innerHTML='<div class="warn" role="alert">Enter a full URL starting with http:// or https://</div>';return}
+  const dom=new URL(u).hostname.replace(/^www\./,'');
+  let ex=null,isExact=false;
+  if(!el.dataset.force){
+   try{
+    const dup=await api.checkDuplicate(u);
+    if(dup&&dup.is_duplicate){
+     ex=dup.existing_item;
+     isExact=dup.is_exact_match;
+    }
+   }catch(_){}
+  }
+  if(ex&&!el.dataset.force){
+   const msg=isExact?`This exact URL is already saved as “${esc(ex.t)}”.`:`${esc(dom)} is already saved as “${esc(ex.t)}”.`;
+   m.innerHTML=`<div class="warn" role="alert">${msg} <button class="tag" data-a="open" data-id="${ex.id}">Open it</button> <button class="tag" data-a="save" data-force="1">Save anyway</button></div>`;
+   return;
+  }
+  const ty=$('#ak').value;
+  const palCols=[C.y,C.b,C.m,C.p,C.c];
+  const payload={
+   title:$('#at').value.trim()||dom,
+   url:u,
+   domain:dom,
+   resource_type:ty,
+   color:palCols[D.length%5],
+   aspect_ratio:'4/3',
+   notes:$('#an').value||'',
+   reason_for_saving:'',
+   force:!!el.dataset.force
+  };
+  try{
+   S.saving=true;el.disabled=true;
+   const created=await api.createItem(payload);
+   const item=fromApiItem(created);
+   item.pend=1;
+   D.unshift(item);
+   close();render();toast('Saved. Preview not generated yet');
+  }catch(err){
+   m.innerHTML=`<div class="warn" role="alert">${esc(err.message)}</div>`;
+  }finally{
+   S.saving=false;el.disabled=false;
+  }
+ }
+});
+document.addEventListener('input',e=>{
+ const k=e.target.dataset.in;if(e.target.id==='q')return rs(e.target.value);
+ const it=D.find(i=>i.id==S.open);if(!it)return;
+ if(k==='why'||k==='note')it[k]=e.target.value;
+ else if(k==='title'&&e.target.value.trim())it.t=e.target.value;
+ else if(k==='cpick'){const c=it.colors[+e.target.dataset.i];c.hex=normHex(e.target.value);c.src='manual';e.target.parentElement.style.background=c.hex}});
+document.addEventListener('change',async e=>{const t=e.target,k=t.dataset.in,it=D.find(i=>i.id==S.open),i=+t.dataset.i;
+ if(k==='pimg'){$('#pf').textContent=t.files[0]?.name||'';return}if(!it)return;
+ if(k==='why'||k==='note'){
+  try{
+   const payload=k==='note'?{notes:t.value}:{reason_for_saving:t.value};
+   await api.updateItem(it.id,payload);
+   it[k]=t.value;
+  }catch(err){toast('Failed to save: '+err.message)}
+ }
+ else if(k==='title'){
+  const val=t.value.trim();
+  if(val){
+   try{
+    await api.updateItem(it.id,{title:val});
+    it.t=val;render();
+   }catch(err){toast('Failed to update title: '+err.message)}
+  }
+ }
+ else if(k==='chex'){
+  const h=normHex(t.value);
+  if(!h){t.setAttribute('aria-invalid','true');toast('Enter a 3 or 6 digit HEX, like #263D32');return}
+  it.colors[i].hex=h;it.colors[i].src='manual';
+  try{
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);
+  }catch(err){toast('Failed to save colour: '+err.message)}
+ }
+ else if(k==='cname'){
+  it.colors[i].n=t.value.trim()||it.colors[i].n;it.colors[i].src='manual';
+  try{
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);
+  }catch(err){toast('Failed to save colour name: '+err.message)}
+ }
+ else if(k==='cpick'){
+  try{
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);
+  }catch(err){toast('Failed to save colour: '+err.message)}
+ }
+ else if(k==='img'){
+  const f=t.files[0];t.value='';if(!f)return;
+  try{
+   const r=await fromFile(f,+$('#ecount').value);
+   r.forEach((h,j)=>it.colors.push({n:'Extracted '+(j+1),hex:h,src:'extracted'}));
+   await api.updateItem(it.id,{colors:it.colors.map(c=>({name:c.n,hex_value:c.hex,source:c.src}))});
+   pd(it);toast('Added '+r.length+' colours from the image');
+  }catch(err){toast(err.message)}
+ }
+});
+document.addEventListener('keydown',async e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();search()}
+ else if(e.key==='Escape'&&$('#layer').innerHTML)close();
+ else if(e.key==='Enter'&&e.target.dataset.in==='tag'){
+  const v=e.target.value.trim().toLowerCase();
+  const it=D.find(i=>i.id==S.open);
+  if(v&&!it.tags.includes(v)){
+   const nextTags=[...it.tags,v];
+   try{
+    await api.updateItem(it.id,{tags:nextTags});
+    it.tags=nextTags;
+    drawer(it.id);render();$('#nt').focus();
+   }catch(err){toast(err.message)}
+  }
+ }
+ else if(e.key==='Tab'&&$('#layer .scrim')){const d=$('#layer [role=dialog],#layer [role=alertdialog]');const f=[...d.querySelectorAll('a[href],button:not([disabled]),input,select,textarea')].filter(x=>x.offsetParent);if(!f.length)return;const a=f[0],z=f[f.length-1],c=document.activeElement;if(!d.contains(c)){e.preventDefault();a.focus()}else if(e.shiftKey&&c===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&c===z){e.preventDefault();a.focus()}}});
+
+async function initApp(){
+ S.loading=true;
+ S.loadError=null;
+ render();
+ try{
+  const [rawItems,rawCols]=await Promise.all([api.getItems(),api.getCollections()]);
+  D=rawItems.map(fromApiItem);
+  COL=rawCols.map(fromApiCollection);
+  S.loading=false;
+  render();
+ }catch(err){
+  S.loading=false;
+  S.loadError=err.message||'Could not load data from server.';
+  render();
+ }
+}
+initApp();
+</script>
+</body>
+</html>
