@@ -110,6 +110,8 @@ class ItemCreate(BaseModel):
 class ItemUpdate(BaseModel):
     """Partial update — every field is optional. PATCH semantics."""
     title: Optional[str] = Field(default=None, min_length=1, max_length=500)
+    resource_type: Optional[ResourceType] = None
+    suggested_type: Optional[str] = None
     notes: Optional[str] = None
     reason_for_saving: Optional[str] = None
     is_favorite: Optional[bool] = None
@@ -144,6 +146,7 @@ class ItemOut(BaseModel):
     normalized_url: Optional[str] = None
     domain: str
     resource_type: ResourceType
+    suggested_type: Optional[str] = None
     title: str
     color: str
     color2: Optional[str]
@@ -154,6 +157,11 @@ class ItemOut(BaseModel):
     is_favorite: bool
     is_archived: bool
     is_pending: bool
+    analysis_status: str = "completed"
+    analysis_error: Optional[str] = None
+    meta_description: Optional[str] = None
+    favicon_url: Optional[str] = None
+    preview_image_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     tags: list[str]
@@ -171,6 +179,7 @@ class ItemOut(BaseModel):
             normalized_url=getattr(item, "normalized_url", None),
             domain=item.domain,
             resource_type=item.resource_type,
+            suggested_type=getattr(item, "suggested_type", None),
             title=item.title,
             color=item.color,
             color2=item.color2,
@@ -180,7 +189,12 @@ class ItemOut(BaseModel):
             reason_for_saving=item.reason_for_saving,
             is_favorite=item.is_favorite,
             is_archived=item.is_archived,
-            is_pending=item.is_pending,
+            is_pending=bool(getattr(item, "is_pending", False) or getattr(item, "analysis_status", "") in ("pending", "processing")),
+            analysis_status=getattr(item, "analysis_status", "completed") or "completed",
+            analysis_error=getattr(item, "analysis_error", None),
+            meta_description=getattr(item, "meta_description", None),
+            favicon_url=getattr(item, "favicon_url", None),
+            preview_image_url=getattr(item, "preview_image_url", None),
             created_at=item.created_at,
             updated_at=item.updated_at,
             tags=[t.name for t in item.tags],

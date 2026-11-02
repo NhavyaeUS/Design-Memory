@@ -370,7 +370,7 @@ def test_api_metadata_extract_post_and_get(client):
     assert data_get["title"] == "Localhost"
 
 
-def test_create_item_with_omitted_title_uses_metadata_fallback(client, monkeypatch):
+def test_create_item_with_omitted_title_uses_metadata_fallback(client, db, monkeypatch):
     """Creating an item with URL but without title automatically resolves title."""
     from app.services import metadata as meta_mod
 
@@ -396,7 +396,18 @@ def test_create_item_with_omitted_title_uses_metadata_fallback(client, monkeypat
     resp = client.post("/api/v1/items", json=payload)
     assert resp.status_code == 201
     item = resp.json()
-    assert item["title"] == "Fonts In Use – Archive of Typography"
+    assert item["title"] == "fontsinuse.com"
+    assert item["analysis_status"] == "pending"
+
+    # Process background analysis using the test database session
+    from app.services.analysis import run_item_analysis_sync
+    import app.services.analysis as analysis_mod
+    monkeypatch.setattr(analysis_mod, "extract_metadata", mock_extract)
+    run_item_analysis_sync(item["id"], db=db)
+
+    updated = client.get(f"/api/v1/items/{item['id']}").json()
+    assert updated["title"] == "Fonts In Use – Archive of Typography"
+    assert updated["analysis_status"] == "completed"
 
 
 def test_user_supplied_title_and_notes_are_never_overwritten(client):
@@ -415,3 +426,15 @@ def test_user_supplied_title_and_notes_are_never_overwritten(client):
     assert item["title"] == "My Custom Title For Site"
     assert item["notes"] == "My personal curated notes"
     assert item["reason_for_saving"] == "Super inspiring layout"
+
+
+def test_ssrf_safe_transport_dns_rebinding_defense():
+    """Verify SSRFSafeTransport blocks connection if peer IP is private/loopback."""
+    from app.core.ssrf import SSRFSafeTransport, SSRFError
+
+    transport = SSRFSafeTransport()
+    # Connecting to 127.0.0.1 directly triggers the socket peer check
+    with httpx.Client(transport=transport) as safe_client:
+        with pytest.raises(SSRFError, match="DNS rebinding blocked"):
+            safe_client.get("http://127.0.0.1:8000")
+

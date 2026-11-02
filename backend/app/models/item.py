@@ -33,6 +33,13 @@ from app.models.collection import item_collection
 from app.models.tag import Tag, item_tag
 
 
+class AnalysisStatus(str, enum.Enum):
+    pending = "pending"
+    processing = "processing"
+    completed = "completed"
+    failed = "failed"
+
+
 class ResourceType(str, enum.Enum):
     website = "website"
     image = "image"
@@ -81,8 +88,18 @@ class Item(Base):
     # ── Status flags ─────────────────────────────────────────────────────────
     is_favorite = Column(Boolean, nullable=False, default=False)
     is_archived = Column(Boolean, nullable=False, default=False)
-    # True while metadata extraction is pending (Phase 1B)
+    # Background analysis lifecycle (Phase 1B)
+    analysis_status = Column(String(30), nullable=False, default=AnalysisStatus.completed.value, index=True)
+    analysis_error = Column(String(500), nullable=True)
+    analysis_retries = Column(Integer, nullable=False, default=0)
+    # True while metadata extraction is pending or processing (backward compatibility)
     is_pending = Column(Boolean, nullable=False, default=False)
+
+    # ── Metadata & analysis results ──────────────────────────────────────────
+    suggested_type = Column(String(50), nullable=True)
+    meta_description = Column(Text, nullable=True)
+    favicon_url = Column(String(2048), nullable=True)
+    preview_image_url = Column(String(2048), nullable=True)
 
     # ── Timestamps ────────────────────────────────────────────────────────────
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)

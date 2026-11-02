@@ -8,7 +8,11 @@ A personal, local design-reference library for collecting, organizing, and inspe
 - **Color Palettes**: Palette creation, HEX/RGB/CMYK/HSL formats, manual editing, and CSS variable export.
 - **Search & Collections**: Instant client-side filtering, tagging, and collection assignment.
 - **URL & Duplicate Handling**: Scheme validation, tracking parameter stripping, exact/domain duplicate checks with optional override.
-- **Safe Metadata Extraction**: Built-in SSRF protection, streaming byte limits, OpenGraph/meta tag parsing, and automatic fallback.
+- **Safe Metadata Extraction**: OpenGraph/meta tag parsing, relative favicon resolution, and automatic graceful fallback.
+- **Security & SSRF Hardening**: Socket-level peer-IP validation mitigating DNS rebinding, private IP blocking, streaming byte limits, and redirect validation.
+- **Durable Background Analysis**: Non-blocking asynchronous analysis, restart recovery, retry backoff, and live UI status updates.
+- **SQLite FTS5 Full-Text Search**: Fast prefix search across titles, domains, notes, reasons, and tags with safe query sanitization.
+- **Category Suggestions**: Deterministic heuristics suggesting resource types with manual user override.
 
 ## Tech Stack
 
@@ -50,3 +54,4 @@ Interactive API docs are available at `http://localhost:8000/docs`.
 ```bash
 pytest -v
 ```
+

@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.urls import extract_domain, normalize_url
 from app.models.collection import Collection
-from app.models.item import Item, Color, ResourceType
+from app.models.item import Item, Color, ResourceType, AnalysisStatus
 from app.models.tag import Tag
 from app.schemas.item import ItemCreate, ItemUpdate
+from app.services.search import sync_item_fts, remove_item_fts, search_fts5
 
 
 class DuplicateResourceError(Exception):
@@ -104,8 +105,9 @@ def list_items(
 
     items = list(db.execute(stmt).scalars().all())
 
-    # Plain-text search (done in Python to keep the service simple; fast enough for personal scale)
+    # Search: leverage SQLite FTS5 index with fallback for color hex/names
     if q:
+        fts_ids = search_fts5(db, q)
         q_lower = q.strip().lower()
         filtered = []
         for it in items:
@@ -114,10 +116,11 @@ def list_items(
                 it.domain or "",
                 it.notes or "",
                 it.reason_for_saving or "",
+                getattr(it, "meta_description", "") or "",
                 " ".join(t.name for t in it.tags),
                 " ".join(f"{c.name} {c.hex_value}" for c in it.colors),
             ]).lower()
-            if q_lower in searchable:
+            if (fts_ids is not None and it.id in fts_ids) or q_lower in searchable:
                 filtered.append(it)
         items = filtered
 
@@ -167,15 +170,11 @@ def create_item(db: Session, data: ItemCreate) -> Item:
                     message=f"{domain} is already saved as '{domain_dup.title}'",
                 )
 
-    # Determine title: preserve user title, or auto-extract from metadata/domain if omitted
+    # Determine title: preserve user title, or default to domain/URL fallback
+    has_url = bool(data.url)
     title = (data.title or "").strip()
     if not title:
-        if data.url:
-            from app.services.metadata import extract_metadata
-            meta = extract_metadata(data.url)
-            title = meta.title
-        else:
-            title = domain or "Untitled Resource"
+        title = domain or "Untitled Resource"
 
     item = Item(
         url=data.url,
@@ -190,7 +189,9 @@ def create_item(db: Session, data: ItemCreate) -> Item:
         notes=data.notes,
         reason_for_saving=data.reason_for_saving,
         is_favorite=data.is_favorite,
-        is_pending=False,
+        is_pending=has_url,
+        analysis_status=AnalysisStatus.pending.value if has_url else AnalysisStatus.completed.value,
+        analysis_retries=0,
     )
     db.add(item)
     db.flush()  # populate item.id before relationships
@@ -199,6 +200,18 @@ def create_item(db: Session, data: ItemCreate) -> Item:
         _sync_colors(db, item, data.colors)
 
     db.flush()
+    sync_item_fts(db, item.id)
+
+    # Schedule background analysis if item has a URL
+    if has_url:
+        import asyncio
+        from app.services.analysis import analyze_item_async
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(analyze_item_async(item.id))
+        except RuntimeError:
+            pass
+
     return _load_item(db, item.id)
 
 
@@ -218,6 +231,10 @@ def update_item(db: Session, item_id: int, data: ItemUpdate) -> Optional[Item]:
 
     if data.title is not None:
         item.title = data.title
+    if data.resource_type is not None:
+        item.resource_type = data.resource_type
+    if data.suggested_type is not None:
+        item.suggested_type = data.suggested_type
     if data.notes is not None:
         item.notes = data.notes
     if data.reason_for_saving is not None:
@@ -248,6 +265,7 @@ def update_item(db: Session, item_id: int, data: ItemUpdate) -> Optional[Item]:
 
     item.updated_at = datetime.now(timezone.utc)
     db.flush()
+    sync_item_fts(db, item.id)
     return _load_item(db, item.id)
 
 
@@ -258,6 +276,7 @@ def toggle_favorite(db: Session, item_id: int) -> Optional[Item]:
     item.is_favorite = not item.is_favorite
     item.updated_at = datetime.now(timezone.utc)
     db.flush()
+    sync_item_fts(db, item.id)
     return _load_item(db, item.id)
 
 
@@ -268,6 +287,7 @@ def archive_item(db: Session, item_id: int) -> Optional[Item]:
     item.is_archived = True
     item.updated_at = datetime.now(timezone.utc)
     db.flush()
+    sync_item_fts(db, item.id)
     return _load_item(db, item.id)
 
 
@@ -275,6 +295,7 @@ def delete_item(db: Session, item_id: int) -> bool:
     item = db.execute(select(Item).where(Item.id == item_id)).scalar_one_or_none()
     if item is None:
         return False
+    remove_item_fts(db, item_id)
     db.delete(item)
     db.flush()
     return True
@@ -335,3 +356,27 @@ def check_duplicate(db: Session, target: str) -> tuple[bool, bool, Optional[Item
             return True, False, domain_dup, f"{clean_dom} is already saved as '{domain_dup.title}'"
 
     return False, False, None, ""
+
+
+def trigger_analysis(db: Session, item_id: int) -> Optional[Item]:
+    """Manually request a fresh background analysis for an existing item."""
+    item = _load_item(db, item_id)
+    if not item or not item.url:
+        return None
+
+    item.analysis_status = AnalysisStatus.pending.value
+    item.analysis_retries = 0
+    item.analysis_error = None
+    item.is_pending = True
+    item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+
+    import asyncio
+    from app.services.analysis import analyze_item_async
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(analyze_item_async(item.id))
+    except RuntimeError:
+        pass
+
+    return _load_item(db, item.id)

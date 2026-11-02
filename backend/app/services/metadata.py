@@ -14,8 +14,9 @@ from typing import Optional
 from urllib.parse import urljoin, urlparse
 import httpx
 
+from app.core.classifier import suggest_category
 from app.core.html_meta import extract_meta_from_html
-from app.core.ssrf import SSRFError, resolve_and_validate_host
+from app.core.ssrf import SSRFError, resolve_and_validate_host, SSRFSafeTransport
 from app.core.urls import extract_domain, validate_url, URLValidationError
 
 
@@ -43,6 +44,7 @@ class MetadataResult:
     image_url: Optional[str]
     success: bool
     status: str
+    suggested_type: Optional[str] = None
     error: Optional[str] = None
 
 
@@ -70,6 +72,7 @@ def _make_fallback_result(url: str, error: str) -> MetadataResult:
     except Exception:
         pass
 
+    cat, _ = suggest_category(url=url, domain=domain, title=fallback_title)
     return MetadataResult(
         url=url,
         domain=domain,
@@ -79,6 +82,7 @@ def _make_fallback_result(url: str, error: str) -> MetadataResult:
         image_url=None,
         success=False,
         status="fallback",
+        suggested_type=cat.value,
         error=error,
     )
 
@@ -133,7 +137,7 @@ def extract_metadata(
 
     own_client = False
     if client is None:
-        client = httpx.Client(timeout=timeout, verify=True)
+        client = httpx.Client(timeout=timeout, verify=True, transport=SSRFSafeTransport())
         own_client = True
 
     try:
@@ -212,15 +216,23 @@ def extract_metadata(
         extracted = extract_meta_from_html(html_content, base_url=current_url)
 
         title = extracted.title or _format_fallback_title(url, domain)
+        clean_dom = extract_domain(current_url) or domain
+        cat, _ = suggest_category(
+            url=current_url,
+            domain=clean_dom,
+            title=title,
+            description=extracted.description,
+        )
         return MetadataResult(
             url=current_url,
-            domain=extract_domain(current_url) or domain,
+            domain=clean_dom,
             title=title,
             description=extracted.description,
             favicon_url=extracted.favicon_url,
             image_url=extracted.image_url,
             success=True,
             status="success",
+            suggested_type=cat.value,
             error=None,
         )
 

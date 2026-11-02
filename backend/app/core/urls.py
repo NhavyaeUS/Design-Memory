@@ -62,6 +62,10 @@ def validate_url(url: str) -> None:
     if not url_clean.lower().startswith((f"{scheme}://")):
         raise URLValidationError("Malformed URL: scheme must be followed by '://'")
 
+    # Disallow embedded credentials (username/password)
+    if parsed.username or parsed.password:
+        raise URLValidationError("URLs containing embedded credentials are not permitted.")
+
     host = parsed.hostname
     if not host:
         raise URLValidationError("Malformed URL: missing hostname.")

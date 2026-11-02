@@ -16,6 +16,7 @@ class MetadataExtractResponse(BaseModel):
     description: Optional[str] = None
     favicon_url: Optional[str] = None
     image_url: Optional[str] = None
+    suggested_type: Optional[str] = None
     success: bool
     status: str
     error: Optional[str] = None

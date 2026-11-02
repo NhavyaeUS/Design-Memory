@@ -17,6 +17,7 @@ Error handling:
   - Unhandled exceptions return HTTP 500 with a generic message; no Python
     traceback is exposed to the client.
 """
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -29,6 +30,19 @@ from app.api.collections import router as collections_router
 from app.api.tags import router as tags_router
 from app.api.metadata import router as metadata_router
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifecycle events: recovers pending jobs after server start."""
+    try:
+        from app.services.analysis import recover_pending_jobs
+        recover_pending_jobs()
+    except Exception as e:
+        import logging
+        logging.getLogger("design_memory").warning(f"Could not recover pending jobs on startup: {e}")
+    yield
+
+
 # ─── Application ─────────────────────────────────────────────────────────────
 
 app = FastAPI(
@@ -37,6 +51,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # ─── Global error handler ─────────────────────────────────────────────────────

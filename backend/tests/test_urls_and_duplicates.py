@@ -231,6 +231,15 @@ def test_api_check_duplicate_endpoint(client):
     assert res_none.json()["existing_item"] is None
 
 
+def test_validate_url_rejects_embedded_credentials():
+    """URLs containing username/password credentials must be rejected."""
+    with pytest.raises(URLValidationError, match="embedded credentials"):
+        validate_url("https://admin:secret123@example.com/dashboard")
+
+    with pytest.raises(URLValidationError, match="embedded credentials"):
+        validate_url("http://user@internal.org")
+
+
 def test_repeated_submission_does_not_create_duplicates(client):
     """Repeated or concurrent submissions of the same URL do not create duplicate rows."""
     payload = {

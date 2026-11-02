@@ -94,6 +94,15 @@ def archive_item(item_id: int, db: Session = Depends(get_db)):
     return _out(item)
 
 
+@router.post("/{item_id}/analyze", response_model=ItemOut)
+def analyze_item(item_id: int, db: Session = Depends(get_db)):
+    """Manually request a fresh background analysis for an existing item."""
+    item = svc.trigger_analysis(db, item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found or has no URL")
+    return _out(item)
+
+
 @router.get("/check/duplicate-domain", response_model=Optional[ItemOut])
 def check_duplicate_domain(domain: str = Query(...), db: Session = Depends(get_db)):
     """

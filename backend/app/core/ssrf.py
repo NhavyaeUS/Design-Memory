@@ -138,3 +138,49 @@ def validate_url_for_ssrf(url: str) -> None:
     if not host:
         raise SSRFError("URL is missing a valid hostname.")
     resolve_and_validate_host(host)
+
+
+# ─── DNS Rebinding / Post-Connect Enforcement ────────────────────────────────
+
+import httpcore
+import httpx
+
+
+class SSRFSafeSyncBackend(httpcore.SyncBackend):
+    """
+    Custom network backend that intercepts socket creation after connect()
+    to verify the actual peer IP address. Defends against DNS rebinding / TOCTOU
+    where DNS resolution shifts to a private IP between check and connect.
+    """
+    def connect_tcp(
+        self,
+        host: str,
+        port: int,
+        timeout: Optional[float] = None,
+        local_address: Optional[str] = None,
+        socket_options=None,
+    ):
+        stream = super().connect_tcp(host, port, timeout, local_address, socket_options)
+        try:
+            peer_ip = stream._sock.getpeername()[0]
+        except Exception as e:
+            stream._sock.close()
+            raise SSRFError(f"Failed to inspect peer IP: {e}") from e
+
+        if not is_safe_ip(peer_ip):
+            stream._sock.close()
+            raise SSRFError(
+                f"DNS rebinding blocked: connected peer '{peer_ip}' is private or reserved."
+            )
+        return stream
+
+
+class SSRFSafeTransport(httpx.HTTPTransport):
+    """HTTPX Transport powered by SSRFSafeSyncBackend for peer IP enforcement."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._pool = httpcore.ConnectionPool(
+            network_backend=SSRFSafeSyncBackend(),
+            ssl_context=getattr(self, "_pool", None) and getattr(self._pool, "_ssl_context", None),
+        )
+
